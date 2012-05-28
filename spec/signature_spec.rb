@@ -18,13 +18,13 @@ describe 'signature' do
     time   = Time.new(2012, 1, 1, 1, 1)
     sqs    = Sqs::Client.new :config => config
 
-    url = "https://sqs.us-east-1.amazonaws.com:443/?AWSAccessKeyId=abc&Signature=cm8exNstBPpdj/t2Vnzy+pp7bC++ENhr9SmB1YT7OcE=&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2012-01-01T00:01:00Z&Version=2011-10-01"
+    url = "https://sqs.us-east-1.amazonaws.com:443/?AWSAccessKeyId=abc&Action=Create&Signature=9PpxZlqjhn37pukmH0I9PoGa+eM0BTTmERPmruW54Kg=&SignatureMethod=HmacSHA256&SignatureVersion=2&Timestamp=2012-01-01T00:01:00Z&Version=2011-10-01"
     stub_request(:any, /.*/).with do |request|
       request.uri.to_s == url
     end.to_return(:status => 200, :body => "<xml></xml>")
 
     Timecop.freeze(time) do
-      sqs.get("/")
+      sqs.get("/", :Action => "Create")
     end
   end
 end
