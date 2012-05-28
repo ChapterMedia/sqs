@@ -1,24 +1,36 @@
 # Sqs
 
-TODO: Write a gem description
+Simple Amazon SQS client
 
 ## Installation
 
 Add this line to your application's Gemfile:
 
-    gem 'sqs'
+    gem 'sqs', :github => "Mixbook/sqs"
 
 And then execute:
 
     $ bundle
 
-Or install it yourself as:
-
-    $ gem install sqs
-
 ## Usage
 
-TODO: Write usage instructions here
+In order to instantiate client you need to pass aws credentials:
+
+```ruby
+client = Sqs::Client.new config: { access_key_id: access_key_id, secret_access_key: secret_access_key }
+```
+
+Then you can run basic operations on client:
+
+```ruby
+queue = client.create_queue("foo")
+
+message = client.send_message(queue, "This is body of a message")
+
+message = client.receive_message(queue)
+
+client.delete_message(message)
+```
 
 ## Contributing
 
@@ -27,3 +39,8 @@ TODO: Write usage instructions here
 3. Commit your changes (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request
+
+## TODO
+
+1. Implement failure responses properly
+2. Implement other SQS actions
