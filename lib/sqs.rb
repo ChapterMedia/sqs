@@ -19,9 +19,10 @@ module Sqs
 
     def create_queue(name)
       params = {
-        :Action    => "CreateQueue",
-        :QueueName => name
       }
+        :action     => "CreateQueue",
+        :queue_name => name
+
       response = get("/", params)
 
       if response.success?
@@ -31,8 +32,8 @@ module Sqs
 
     def get_queue(name)
       params = {
-        :Action    => "GetQueueUrl",
-        :QueueName => name
+        :action    => "GetQueueUrl",
+        :queue_name => name
       }
       response = get("/", params)
 
@@ -43,8 +44,8 @@ module Sqs
 
     def send_message(queue, body)
       params = {
-        :Action => "SendMessage",
-        :MessageBody => body
+        :action => "SendMessage",
+        :message_body => body
       }
 
       response = get(queue.url, params)
@@ -56,7 +57,7 @@ module Sqs
 
     def receive_message(queue)
       params = {
-        :Action => "ReceiveMessage"
+        :action => "ReceiveMessage"
       }
 
       response = get(queue.url, params)
@@ -68,8 +69,8 @@ module Sqs
 
     def delete_message(message)
       params = {
-        :Action => "DeleteMessage",
-        :ReceiptHandle => message.receipt_handle
+        :action => "DeleteMessage",
+        :receipt_handle => message.receipt_handle
       }
 
       response = get(message.queue_url, params)
@@ -81,8 +82,8 @@ module Sqs
 
     [:get, :post, :put, :delete, :head].each do |method|
       define_method(method) do |path, params = {}, headers = {}, &block|
-        response = connection.send(method, path, params, headers, &block)
-        wrap_response params[:Action], response
+        response = connection.send(method, path, camelize_params(params), headers, &block)
+        wrap_response params[:action], response
       end
     end
 
@@ -95,6 +96,22 @@ module Sqs
       end
 
       klass.new(response)
+    end
+
+    def camelize_params(args = {})
+      args = args.map do |k, v|
+        [camelize(k), v]
+      end
+
+      Hash[args]
+    end
+
+    # I don't want to require active support just for camelize, so I'll
+    # just copy it for now
+    def camelize(term)
+      string = term.to_s
+      string = string.sub(/^[a-z\d]*/) { $&.capitalize }
+      string.gsub(/(?:_|(\/))([a-z\d]*)/i) { "#{$1}#{$2.capitalize}" }.gsub('/', '::')
     end
 
     def connection
