@@ -18,6 +18,19 @@ describe Sqs::Client do
       queue.name.should == "foo"
       queue.url.should  == "http://sqs.us-east-1.amazonaws.com/123456789012/foo"
     end
+
+    it "passes the options for creation (camel cased)" do
+      body = sample_response("create_queue")
+
+      stub_request(:get, /.*/).with do |request|
+        request.uri.to_s =~ /Action=CreateQueue/ &&
+          request.uri.to_s =~ /QueueName=foo/ &&
+          request.uri.to_s =~ /MaximumMessageSize=1/
+      end.to_return(:status => 200, :body => body)
+
+      queue = client.create_queue("foo", :maximum_message_size => 1)
+      queue.name.should == "foo"
+    end
   end
 
   context "#get_queue" do

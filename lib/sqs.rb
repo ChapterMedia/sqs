@@ -17,11 +17,11 @@ module Sqs
       @secret_access_key = config[:secret_access_key]
     end
 
-    def create_queue(name)
+    def create_queue(name, args = {})
       params = {
-      }
         :action     => "CreateQueue",
         :queue_name => name
+      }.merge(args)
 
       response = get("/", params)
 
