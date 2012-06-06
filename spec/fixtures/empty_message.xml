@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<ReceiveMessageResponse xmlns="http://queue.amazonaws.com/doc/2011-10-01/">
+  <ReceiveMessageResult/>
+  <ResponseMetadata>
+    <RequestId>14f77525-d0f1-4c70-a2b8-49bede93999a</RequestId>
+  </ResponseMetadata>
+</ReceiveMessageResponse>

@@ -102,6 +102,20 @@ describe Sqs::Client do
       message.id.should == "5fea7756-0ea4-451a-a703-a558b933e274"
       message.body.should == "This is a test message"
     end
+
+    context "without any messages returned" do
+      it "returns nil" do
+        body = sample_response("empty_message")
+        queue = Sqs::Queue.new("foo", "https://queue.url/queue/foo")
+
+        stub_request(:get, /.*/).with do |request|
+          request.uri.to_s =~ /Action=ReceiveMessage/ &&
+            request.uri.to_s =~ /https:\/\/queue.url:443\/queue\/foo/
+        end.to_return(:status => 200, :body => body)
+
+        client.receive_message(queue).should be_nil
+      end
+    end
   end
 
   context "#send_message" do

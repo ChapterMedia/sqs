@@ -68,6 +68,11 @@ module Sqs
         :receipt_handle => field("ReceiptHandle"),
       }
     end
+
+    def empty_message?
+      result = content.css("ReceiveMessageResult").first
+      result.nil? || result.children.empty?
+    end
   end
 
   class SendMessageResponse < Response

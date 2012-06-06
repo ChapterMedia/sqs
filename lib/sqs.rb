@@ -60,7 +60,10 @@ module Sqs
       }
 
       response = get!(queue.url, params)
-      Message.new(queue, response.attributes)
+
+      unless response.empty_message?
+        Message.new(queue, response.attributes)
+      end
     end
 
     def delete_message(message)
