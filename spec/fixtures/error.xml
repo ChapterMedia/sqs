@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ErrorResponse xmlns="http://queue.amazonaws.com/doc/2011-10-01/">
+  <Error>
+    <Type>Sender</Type>
+    <Code>NotFound</Code>
+    <Message>Resource was not found</Message>
+    <Detail/>
+  </Error>
+  <RequestId>bd3f6074-8906-4258-89de-f4ea8de9682c</RequestId>
+</ErrorResponse>

@@ -6,6 +6,19 @@ describe Sqs::Client do
   end
 
   context "#create_queue" do
+    it "throws error if there is any problem with request" do
+      body = sample_response("error")
+
+      stub_request(:get, /.*/).with do |request|
+        request.uri.to_s =~ /Action=CreateQueue/ &&
+          request.uri.to_s =~ /QueueName=foo/
+      end.to_return(:status => 404, :body => body)
+
+      expect {
+        client.create_queue("foo")
+      }.to raise_error { |error| error.should be_a_kind_of(Sqs::RequestError) }
+    end
+
     it "makes a request to create and returns a queue" do
       body = sample_response("create_queue")
 
@@ -34,6 +47,19 @@ describe Sqs::Client do
   end
 
   context "#get_queue" do
+    it "throws error if there is any problem with request" do
+      body = sample_response("error")
+
+      stub_request(:get, /.*/).with do |request|
+        request.uri.to_s =~ /Action=GetQueueUrl/ &&
+          request.uri.to_s =~ /QueueName=foo/
+      end.to_return(:status => 404, :body => body)
+
+      expect {
+        client.get_queue("foo")
+      }.to raise_error { |error| error.should be_a_kind_of(Sqs::RequestError) }
+    end
+
     it "returns a queue" do
       body = sample_response("get_queue_url")
 
@@ -49,6 +75,19 @@ describe Sqs::Client do
   end
 
   context "#receive_message" do
+    it "throws error if there is any problem with request" do
+      body = sample_response("error")
+      queue = Sqs::Queue.new("foo", "https://queue.url/queue/foo")
+
+      stub_request(:get, /.*/).with do |request|
+        request.uri.to_s =~ /Action=ReceiveMessage/
+      end.to_return(:status => 404, :body => body)
+
+      expect {
+        client.receive_message(queue)
+      }.to raise_error { |error| error.should be_a_kind_of(Sqs::RequestError) }
+    end
+
     it "returns a message" do
       body = sample_response("receive_message")
       queue = Sqs::Queue.new("foo", "https://queue.url/queue/foo")
@@ -66,6 +105,19 @@ describe Sqs::Client do
   end
 
   context "#send_message" do
+    it "throws error if there is any problem with request" do
+      body = sample_response("error")
+      queue = Sqs::Queue.new("foo", "https://queue.url/queue/foo")
+
+      stub_request(:get, /.*/).with do |request|
+        request.uri.to_s =~ /Action=SendMessage/
+      end.to_return(:status => 404, :body => body)
+
+      expect {
+        client.send_message(queue, "foo")
+      }.to raise_error { |error| error.should be_a_kind_of(Sqs::RequestError) }
+    end
+
     it "sends and returns mesage" do
       body = sample_response("send_message")
       queue = Sqs::Queue.new("foo", "https://queue.url/queue/foo")
@@ -82,6 +134,20 @@ describe Sqs::Client do
   end
 
   context "#delete_message" do
+    it "throws error if there is any problem with request" do
+      body = sample_response("error")
+      queue = Sqs::Queue.new("foo", "https://queue.url/queue/foo")
+      message = Sqs::Message.new(queue, { :receipt_handle => "abc123" })
+
+      stub_request(:get, /.*/).with do |request|
+        request.uri.to_s =~ /Action=DeleteMessage/
+      end.to_return(:status => 404, :body => body)
+
+      expect {
+        client.delete_message(message)
+      }.to raise_error { |error| error.should be_a_kind_of(Sqs::RequestError) }
+    end
+
     it "deletes a message" do
       body = sample_response("delete_message")
       queue = Sqs::Queue.new("foo", "https://queue.url/queue/foo")

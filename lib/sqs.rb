@@ -8,6 +8,14 @@ require "sqs/message"
 require "sqs/responses"
 
 module Sqs
+  class RequestError < StandardError
+    attr_reader :response
+    def initialize(message, response)
+      @response = response
+      super(message)
+    end
+  end
+
   class Client
     attr_reader :access_key_id, :secret_access_key
 
@@ -23,11 +31,8 @@ module Sqs
         :queue_name => name
       }.merge(args)
 
-      response = get("/", params)
-
-      if response.success?
-        Queue.new(name, response.queue_url)
-      end
+      response = get!("/", params)
+      Queue.new(name, response.queue_url)
     end
 
     def get_queue(name)
@@ -35,11 +40,8 @@ module Sqs
         :action    => "GetQueueUrl",
         :queue_name => name
       }
-      response = get("/", params)
-
-      if response.success?
-        Queue.new(name, response.queue_url)
-      end
+      response = get!("/", params)
+      Queue.new(name, response.queue_url)
     end
 
     def send_message(queue, body)
@@ -48,11 +50,8 @@ module Sqs
         :message_body => body
       }
 
-      response = get(queue.url, params)
-
-      if response.success?
-        Message.new(queue, response.attributes)
-      end
+      response = get!(queue.url, params)
+      Message.new(queue, response.attributes)
     end
 
     def receive_message(queue)
@@ -60,11 +59,8 @@ module Sqs
         :action => "ReceiveMessage"
       }
 
-      response = get(queue.url, params)
-
-      if response.success?
-        Message.new(queue, response.attributes)
-      end
+      response = get!(queue.url, params)
+      Message.new(queue, response.attributes)
     end
 
     def delete_message(message)
@@ -73,17 +69,29 @@ module Sqs
         :receipt_handle => message.receipt_handle
       }
 
-      response = get(message.queue_url, params)
-
+      response = get!(message.queue_url, params)
       response.success?
     end
 
     private
 
-    [:get, :post, :put, :delete, :head].each do |method|
+    http_methods = [:get, :post, :put, :delete, :head]
+    http_methods.each do |method|
       define_method(method) do |path, params = {}, headers = {}, &block|
         response = connection.send(method, path, camelize_params(params), headers, &block)
         wrap_response params[:action], response
+      end
+    end
+
+    http_methods.each do |method|
+      define_method("#{method}!") do |path, params = {}, headers = {}, &block|
+        response = send(method, path, params, headers, &block)
+
+        unless response.success?
+          raise RequestError.new("Request failed", response)
+        end
+
+        response
       end
     end
 
