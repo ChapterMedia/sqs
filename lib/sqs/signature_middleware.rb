@@ -39,11 +39,7 @@ module Sqs
     end
 
     def canonical_query_string(query)
-      query.split("&").sort.map { |pair|
-        pair.split("=").map { |v|
-          CGI.escape(v.to_s)
-        }.join("=")
-      }.join('&')
+      query.split("&").sort.join("&")
     end
   end
 
@@ -59,7 +55,7 @@ module Sqs
     def call(env)
       headers = env[:request_headers]
 
-      env[:url].query << "&Timestamp=#{Time.now.utc.iso8601}"
+      env[:url].query << "&Timestamp=#{CGI.escape(Time.now.utc.iso8601)}"
       env[:url].query << "&SignatureMethod=HmacSHA256&SignatureVersion=2"
       env[:url].query << "&Signature=#{CGI.escape(signature(env))}"
 
