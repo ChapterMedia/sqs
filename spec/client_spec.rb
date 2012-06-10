@@ -61,13 +61,24 @@ describe Sqs::Client do
   end
 
   context "#get_queue" do
+    it "returns nil if queue can't be found" do
+      body = sample_response("queue_not_found")
+
+      stub_request(:get, /.*/).with do |request|
+        request.uri.to_s =~ /Action=GetQueueUrl/ &&
+          request.uri.to_s =~ /QueueName=foo/
+      end.to_return(:status => 404, :body => body)
+
+      client.get_queue("foo").should == nil
+    end
+
     it "throws error if there is any problem with request" do
       body = sample_response("error")
 
       stub_request(:get, /.*/).with do |request|
         request.uri.to_s =~ /Action=GetQueueUrl/ &&
           request.uri.to_s =~ /QueueName=foo/
-      end.to_return(:status => 404, :body => body)
+      end.to_return(:status => 500, :body => body)
 
       expect {
         client.get_queue("foo")

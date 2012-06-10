@@ -7,16 +7,9 @@ require "sqs/response_xml"
 require "sqs/queue"
 require "sqs/message"
 require "sqs/responses"
+require "sqs/errors"
 
 module Sqs
-  class RequestError < StandardError
-    attr_reader :response
-    def initialize(message, response)
-      @response = response
-      super(message)
-    end
-  end
-
   class Client
     attr_reader :access_key_id, :secret_access_key
 
@@ -41,7 +34,15 @@ module Sqs
         :action    => "GetQueueUrl",
         :queue_name => name
       }
-      response = get!("/", params)
+
+      response = nil
+
+      begin
+        response = get!("/", params)
+      rescue QueueNotFoundError
+        return nil
+      end
+
       Queue.new(name, response.queue_url)
     end
 
@@ -92,7 +93,7 @@ module Sqs
         response = send(method, path, params, headers, &block)
 
         unless response.success?
-          raise RequestError.new("Request failed", response)
+          raise RequestError.from_response(response)
         end
 
         response
