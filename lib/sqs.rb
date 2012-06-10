@@ -2,6 +2,7 @@ require "faraday"
 
 require "sqs/version"
 require "sqs/signature_middleware"
+require "sqs/retry_middleware"
 require "sqs/response_xml"
 require "sqs/queue"
 require "sqs/message"
@@ -128,6 +129,7 @@ module Sqs
     def connection
       @connection ||= begin
         Faraday.new(:url => 'https://sqs.us-east-1.amazonaws.com') do |builder|
+          builder.use Sqs::RetryMiddleware
           builder.use Faraday::Request::UrlEncoded
           builder.use Sqs::SignatureMiddleware, :access_key_id => access_key_id, :secret_access_key => secret_access_key
           builder.use Sqs::ResponseXML

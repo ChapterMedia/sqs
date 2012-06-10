@@ -5,6 +5,20 @@ describe Sqs::Client do
     Sqs::Client.new(:config => { :access_key_id => "abc", :secret_access_key => "def" })
   end
 
+  it "retries if there is a problem with sending request" do
+    count = 0
+    stub_request(:put, /.*/).to_raise(Timeout::Error).with do |request|
+      count += 1
+    end
+
+    expect {
+      client.put("/")
+    }.to raise_error
+
+
+    count.should == 3
+  end
+
   context "#create_queue" do
     it "throws error if there is any problem with request" do
       body = sample_response("error")
