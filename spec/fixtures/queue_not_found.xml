@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<ErrorResponse xmlns="http://queue.amazonaws.com/doc/2011-10-01/">
+  <Error>
+    <Type>Sender</Type>
+    <Code>AWS.SimpleQueueService.NonExistentQueue</Code>
+    <Message>The specified queue does not exist or you do not have access to it.</Message>
+    <Detail/>
+  </Error>
+  <RequestId>cb03e4a9-23e6-4f20-965a-374d23e92a44</RequestId>
+</ErrorResponse>
