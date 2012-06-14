@@ -92,9 +92,7 @@ module Sqs
       define_method("#{method}!") do |path, params = {}, headers = {}, &block|
         response = send(method, path, params, headers, &block)
 
-        unless response.success?
-          raise RequestError.from_response(response)
-        end
+        raise response unless response.success?
 
         response
       end

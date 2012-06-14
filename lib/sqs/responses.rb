@@ -34,6 +34,20 @@ module Sqs
     def success?
       (200..299).include? status
     end
+
+    def exception
+      # TODO: refactor if there is need for more cases
+      if error_code == "AWS.SimpleQueueService.NonExistentQueue"
+        QueueNotFoundError.new("Queue could not be found", self)
+      else
+        RequestError.new("Request failed: #{error_code}", self)
+      end
+    end
+
+    def error_code
+      element = xml.css("Code").first
+      element && element.text
+    end
   end
 
   class QueueResponse < Response
