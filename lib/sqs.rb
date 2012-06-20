@@ -127,7 +127,10 @@ module Sqs
 
     def connection
       @connection ||= begin
-        Faraday.new(:url => 'https://sqs.us-east-1.amazonaws.com') do |builder|
+        ssl = {}
+        ssl[:ca_path] = '/etc/ssl/certs' if File.exists?('/etc/ssl/certs') # Ubuntu
+        ssl[:ca_file] = '/opt/local/share/curl/curl-ca-bundle.crt' if File.exists?('/opt/local/share/curl/curl-ca-bundle.crt') # Mac OS X
+        Faraday.new(:url => 'https://sqs.us-east-1.amazonaws.com', :ssl => ssl) do |builder|
           builder.use Sqs::RetryMiddleware
           builder.use Faraday::Request::UrlEncoded
           builder.use Sqs::SignatureMiddleware, :access_key_id => access_key_id, :secret_access_key => secret_access_key
